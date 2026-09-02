@@ -36,7 +36,7 @@ app.use('/imageUploads', express.static('imageUploads'))
 app.use('/api/auth', Global)
 app.use('/api/chat', Chatauth)
 
-server.listen(Port, () => {
+server.listen(Port, '0.0.0.0', () => {
     console.log("Your App is Listening on :: Port ", Port)
 })
 
