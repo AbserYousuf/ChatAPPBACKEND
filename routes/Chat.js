@@ -83,7 +83,7 @@ router.post('/sendChat/:id', ChatLimiter, RefreshVerify, upload.single('image'),
         if (message) {
             Userdata.message = message
         }
-        const { getReceiverSocketId } = require('../socket')
+        const { getReceiverSocketId } = require('../Socket')
         const chat = await Chat.create(Userdata)
         await chat.populate('image')
         const receiverSocketId = getReceiverSocketId(receiverId)
