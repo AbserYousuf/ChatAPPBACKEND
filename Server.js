@@ -39,7 +39,7 @@ const Global = require('./routes/Credentials')
 const Chatauth = require('./routes/Chat')
 const path = require('path')
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
-app.use('/imageUploads', express.static('imageUploads'))
+app.use('/imageUploads', express.static(path.join(__dirname, 'imageuploads')))
 app.use('/api/auth', Global)
 app.use('/api/chat', Chatauth)
 
