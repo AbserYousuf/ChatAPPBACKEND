@@ -20,7 +20,7 @@ const io = new Server(server, {
     cors: { origin: '*' }
 })
 
-const { initSocket } = require('./socket')
+const { initSocket } = require('./Socket')
 initSocket(io)
 app.set('io', io)
 
