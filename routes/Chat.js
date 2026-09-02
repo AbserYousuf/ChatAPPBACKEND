@@ -9,9 +9,9 @@ const path = require('path')
 const { rateLimit } = require('express-rate-limit')
 const { body, validationResult } = require("express-validator");
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'imageUploads/')   // make sure this folder exists at your project root
-    },
+   destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, 'imageUploads'))
+},
     filename: (req, file, cb) => {
         const uniqueName = `${req.userId}-${Date.now()}${path.extname(file.originalname)}`
         cb(null, uniqueName)
