@@ -57,67 +57,113 @@ router.post('/signup', GlobalLimiter, [
     body("Name").trim().
         notEmpty().withMessage("Name Required").
         isLength({
-            max: (20),
-            min: (3)
+            max: 20,
+            min: 3
         }).withMessage("Mimimum 3 and Maximum 20 characters are allowed in the Name"),
+
     body('Username').
         trim().
         notEmpty().withMessage("Username Required").
         isLength({
             min: 2,
             max: 10
-        }).withMessage("Minimum 2 and Maximum 10 characters are  allowed in  Username "),
+        }).withMessage("Minimum 2 and Maximum 10 characters are allowed in Username"),
+
     body("Email").trim()
         .notEmpty().withMessage("Email Required").
-        isEmail().withMessage("Please Enter a valid Email").normalizeEmail().withMessage('Please Enter a valid Email'),
-    body('Password').notEmpty().withMessage("Password is required").isStrongPassword({
-        minLength: 8,
-        minUppercase: 1,
-        minLowercase: 1,
-        minSymbols: 1,
-        minNumbers: 1
-    }).withMessage("Password should contain Atlease 1 Uppercase,Lowercase, Number and symbol and Must Be 8 characters"),
+        isEmail().withMessage("Please Enter a valid Email").
+        normalizeEmail().withMessage('Please Enter a valid Email'),
+
+    body('Password')
+        .notEmpty().withMessage("Password is required")
+        .isStrongPassword({
+            minLength: 8,
+            minUppercase: 1,
+            minLowercase: 1,
+            minSymbols: 1,
+            minNumbers: 1
+        })
+        .withMessage("Password should contain Atlease 1 Uppercase,Lowercase, Number and symbol and Must Be 8 characters"),
+
     body("ProfilePicture").trim().optional().custom((value) => {
         const isWebUrl = /^https?:\/\/.+/i.test(value);
         const isLocalMobileUri = /^(file|content):\/\/\/.+/i.test(value);
         const isRelativeServerPath = /^(\/)?uploads\/.+/i.test(value);
+
         if (isWebUrl || isLocalMobileUri || isRelativeServerPath) {
             return true;
         }
-        throw new Error('Must be a valid web URL (http/https), local file URI (file/content), or server path');
+
+        throw new Error(
+            'Must be a valid web URL (http/https), local file URI (file/content), or server path'
+        );
     })
+
 ], async (req, res) => {
+
     const errors = validationResult(req)
+
     if (!errors.isEmpty()) {
         return res.status(400).json({
             success: false,
             message: errors.array()[0].msg
         })
     }
+
     const { Name, Username, Email, Password, ProfilePicture } = req.body
 
     try {
-        const CheckIdentity = await User.findOne({ $or: [{ Email }, { Username }] })
+
+        const CheckIdentity = await User.findOne({
+            $or: [{ Email }, { Username }]
+        })
+
         if (CheckIdentity) {
             return res.status(400).json({
                 success: false,
-                message: "Try to Use a Different Email or Username.  "
+                message: "Try to Use a Different Email or Username."
             })
         }
-        const saltRounds = 10;
-        let user = ''
+
+        const saltRounds = 10
+
         const Salt = await bcrypt.genSalt(saltRounds)
         const DatabasePassword = await bcrypt.hash(Password, Salt)
 
-        const userData = { Name, Username, Email, Password: DatabasePassword }
-        if (ProfilePicture) userData.ProfilePicture = ProfilePicture
-        user = await User.create(userData)
+        const userData = {
+            Name,
+            Username,
+            Email,
+            Password: DatabasePassword
+        }
+
+        if (ProfilePicture) {
+            userData.ProfilePicture = ProfilePicture
+        }
+
+        const user = await User.create(userData)
+
         const id = user._id
+
         const payload = {
             id: id,
         }
+
         const Data = await User.findById(id).select('-Password')
-        const SignupToken = jwt.sign(payload, TokenKey, { expiresIn: '7d' })
+
+        const SignupToken = jwt.sign(
+            payload,
+            TokenKey,
+            { expiresIn: '7d' }
+        )
+
+        // Notify connected clients about the newly created user
+        const io = req.app.get('io')
+
+        if (io) {
+            io.emit('newUser', Data)
+        }
+
         return res.status(200).json({
             success: true,
             SignupToken: SignupToken,
@@ -125,17 +171,23 @@ router.post('/signup', GlobalLimiter, [
             userId: id.toString(),
             message: "SuccessFully-Created"
         })
+
     } catch (error) {
+
         if (error.code === 11000) {
-            return res.status(400).json({ success: false, message: "Email or Username already in use" })
+            return res.status(400).json({
+                success: false,
+                message: "Email or Username already in use"
+            })
         }
+
         console.error(error)
+
         return res.status(500).json({
             success: false,
             message: "Internal Server Error "
         })
     }
-
 })
 router.post('/Login', GlobalLimiter, [
     body('Username').trim().optional({ checkFalsy: true }),
