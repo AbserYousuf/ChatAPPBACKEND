@@ -1,0 +1,5 @@
+.env
+node_modules/
+# Uploaded user files
+imageUploads/
+uploads/

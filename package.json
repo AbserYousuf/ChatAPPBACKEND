@@ -1,0 +1,31 @@
+{
+  "name": "chatback",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Database.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.6.1",
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.1",
+    "multer": "^2.3.0",
+    "nodemon": "^3.1.14",
+    "resend": "^6.18.1",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "validator": "^13.15.35"
+  }
+}

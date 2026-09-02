@@ -1,0 +1,43 @@
+require('dotenv').config()
+const requiredEnvVars = ['GLOBAL_KEY', 'RESET_KEY', 'OTP_KEY', 'SENDGRID_API_KEY', 'MYEMAIL', 'PORT', 'MONGO_URL', 'REFRESH_KEY']
+for (const key of requiredEnvVars) {
+    if (!process.env[key]) {
+        throw new Error(`Missing required environment variable: ${key}`)
+    }
+}
+
+const MongoConnect = require('./Database')
+MongoConnect();
+
+const express = require('express')
+const cors = require('cors')
+const http = require('http')
+const { Server } = require('socket.io')
+
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server, {
+    cors: { origin: '*' }
+})
+
+const { initSocket } = require('./socket')
+initSocket(io)
+app.set('io', io)
+
+app.use(express.json())
+app.use(cors())
+
+const Port = process.env.PORT
+const Global = require('./routes/Credentials')
+const Chatauth = require('./routes/Chat')
+const path = require('path')
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+app.use('/imageUploads', express.static('imageUploads'))
+app.use('/api/auth', Global)
+app.use('/api/chat', Chatauth)
+
+server.listen(Port, () => {
+    console.log("Your App is Listening on :: Port ", Port)
+})
+
+module.exports = { io }
