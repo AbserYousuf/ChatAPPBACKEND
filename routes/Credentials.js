@@ -20,10 +20,13 @@ const path = require('path')
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/')   // make sure this folder exists at your project root
+        cb(null, path.join(__dirname, '../uploads'))
     },
+
     filename: (req, file, cb) => {
-        const uniqueName = `${req.userId}-${Date.now()}${path.extname(file.originalname)}`
+        const uniqueName =
+            `${req.userId}-${Date.now()}${path.extname(file.originalname)}`
+
         cb(null, uniqueName)
     }
 })
