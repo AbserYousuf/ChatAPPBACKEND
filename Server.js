@@ -1,7 +1,7 @@
 require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
-const imageUploadDir = path.join(__dirname, 'imageUploads')
+const imageUploadDir = path.join(__dirname, 'imageuploads')
 if (!fs.existsSync(imageUploadDir)) {
     fs.mkdirSync(imageUploadDir, { recursive: true })
 }
