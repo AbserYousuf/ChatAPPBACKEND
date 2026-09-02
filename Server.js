@@ -2,8 +2,12 @@ require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
 const imageUploadDir = path.join(__dirname, 'imageuploads')
+const uploadDir = path.join(__dirname, 'uploads')
 if (!fs.existsSync(imageUploadDir)) {
     fs.mkdirSync(imageUploadDir, { recursive: true })
+}
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true })
 }
 const requiredEnvVars = ['GLOBAL_KEY', 'RESET_KEY', 'OTP_KEY', 'SENDGRID_API_KEY', 'MYEMAIL', 'PORT', 'MONGO_URL', 'REFRESH_KEY']
 for (const key of requiredEnvVars) {
