@@ -42,16 +42,29 @@ function initSocket(io) {
         })
 
         socket.on('disconnect', () => {
-            console.log(`User disconnected: ${socket.userId}`)
 
-            onlineUsers.delete(socket.userId)
+    console.log(`User disconnected: ${socket.userId}`)
+    console.log(`Disconnected socket: ${socket.id}`)
 
+    const currentSocketId = onlineUsers.get(socket.userId)
 
-            io.emit(
-                'onlineUsers',
-                Array.from(onlineUsers.keys())
-            )
-        })
+    // Only remove the user if this disconnected socket
+    // is the socket currently registered for that user.
+    if (currentSocketId === socket.id) {
+        onlineUsers.delete(socket.userId)
+
+        console.log(`Removed ${socket.userId} from online users`)
+    } else {
+        console.log(
+            `User ${socket.userId} still has another active socket`
+        )
+    }
+
+    io.emit(
+        'onlineUsers',
+        Array.from(onlineUsers.keys())
+    )
+})
     })
 }
 
