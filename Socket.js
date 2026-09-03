@@ -14,12 +14,16 @@ function emitOnlineUsers(io) {
 
 function initSocket(io) {
 
+    // -----------------------------------------
+    // SOCKET AUTHENTICATION
+    // -----------------------------------------
+
     io.use((socket, next) => {
 
         const token = socket.handshake.auth?.token
 
         if (!token) {
-            return next(new Error("Authentication token missing"))
+            return next(new Error('Authentication token missing'))
         }
 
         try {
@@ -34,10 +38,14 @@ function initSocket(io) {
 
             console.log('JWT verify error:', error.message)
 
-            return next(new Error("Invalid or expired token"))
+            return next(new Error('Invalid or expired token'))
         }
     })
 
+
+    // -----------------------------------------
+    // CONNECTION
+    // -----------------------------------------
 
     io.on('connection', (socket) => {
 
@@ -54,7 +62,9 @@ function initSocket(io) {
             onlineUsers.set(socket.userId, new Set())
         }
 
-        onlineUsers.get(socket.userId).add(socket.id)
+        onlineUsers
+            .get(socket.userId)
+            .add(socket.id)
 
 
         console.log(
@@ -63,33 +73,28 @@ function initSocket(io) {
         )
 
 
+        // Tell EVERY connected client
+        // about the updated online users
+        emitOnlineUsers(io)
+
+
         // -----------------------------------------
-        // IMPORTANT:
-        // SEND CURRENT ONLINE USERS
+        // GET ONLINE USERS
         // -----------------------------------------
 
-        socket.emit(
-            'onlineUsers',
-            Array.from(onlineUsers.keys())
-        )
+        socket.on('getOnlineUsers', () => {
 
-        // Tell everyone else as well
-        socket.broadcast.emit(
-            'onlineUsers',
-            Array.from(onlineUsers.keys())
-        )
+            console.log(
+                `Sending online users to ${socket.userId}`
+            )
 
-socket.on('getOnlineUsers', () => {
+            socket.emit(
+                'onlineUsers',
+                Array.from(onlineUsers.keys())
+            )
+        })
 
-    console.log(
-        `Sending online users to ${socket.userId}`
-    )
 
-    socket.emit(
-        'onlineUsers',
-        Array.from(onlineUsers.keys())
-    )
-})
         // -----------------------------------------
         // TYPING
         // -----------------------------------------
@@ -164,11 +169,11 @@ socket.on('getOnlineUsers', () => {
             }
 
 
-            // Remove only this particular socket
+            // Remove only this socket
             userSockets.delete(socket.id)
 
 
-            // If user has NO devices/sockets left
+            // If user has no remaining sockets
             if (userSockets.size === 0) {
 
                 onlineUsers.delete(socket.userId)
@@ -192,6 +197,10 @@ socket.on('getOnlineUsers', () => {
 }
 
 
+// -----------------------------------------
+// GET ONE SOCKET ID
+// -----------------------------------------
+
 function getReceiverSocketId(userId) {
 
     const sockets = onlineUsers.get(userId)
@@ -200,7 +209,8 @@ function getReceiverSocketId(userId) {
         return null
     }
 
-    // Return one socket for code that expects a single ID
+    // Return one socket for code that expects
+    // a single socket ID
     return sockets.values().next().value
 }
 
