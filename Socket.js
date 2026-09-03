@@ -79,7 +79,17 @@ function initSocket(io) {
             Array.from(onlineUsers.keys())
         )
 
+socket.on('getOnlineUsers', () => {
 
+    console.log(
+        `Sending online users to ${socket.userId}`
+    )
+
+    socket.emit(
+        'onlineUsers',
+        Array.from(onlineUsers.keys())
+    )
+})
         // -----------------------------------------
         // TYPING
         // -----------------------------------------
